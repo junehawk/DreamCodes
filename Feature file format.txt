@@ -1,0 +1,15 @@
+Feature file format
+
+File Name: Drug[DrugNum]_[Data].txt
+[DrugNum] : 1~31
+[Data] : {Mutation, GeneExpression, Methylation, RNAseq, RPPA, CNV}
+
+File format
+
+FeatureName, Celline1, Celline2, ..., CellineN
+AKT1_Mutation, 1, 0, 1, ..., 1
+PTEN_GeneExpression, 1.291129, 2.128211, ..., 0.129121
+P53_Methylation, ...
+BRCA1_RNAseq, ...
+ASZ1_RPPA, ...
+PDLIM3_CNV, ...

@@ -1,0 +1,19 @@
+meth = read.table("~/Dream7/DrugSensitivity1/DREAM7_DrugSensitivity1_Methylation.txt", header=TRUE, row.names=1, stringsAsFactors=FALSE);
+ds = read.table("~/Dream7/DrugSensitivity1/DREAM7_DrugSensitivity1_Drug_Response_Training.txt", header=TRUE, row.names=1);
+seq = read.table("~/Dream7/DrugSensitivity1/DREAM7_DrugSensitivity1_Exomeseq.txt", header=TRUE, stringsAsFactors=FALSE);
+ge = read.table("~/Dream7/DrugSensitivity1/DREAM7_DrugSensitivity1_GeneExpression.txt", header=TRUE, stringsAsFactors=FALSE);
+rnaseq= read.table("~/Dream7/DrugSensitivity1/DREAM7_DrugSensitivity1_RNAseq_expressed_calls.txt", header=TRUE, stringsAsFactors=FALSE);
+rppa = read.table("~/Dream7/DrugSensitivity1/DREAM7_DrugSensitivity1_RPPA.txt", header=TRUE, stringsAsFactors=FALSE);
+cnv= read.table("~/Dream7/DrugSensitivity1/DREAM7_DrugSensitivity1_SNP6.cbs", header=TRUE, stringsAsFactors=FALSE);
+prediction = read.table("~/Dream7/DrugSensitivity1/DREAM7_DrugSensitivity1_Predictions.csv", header=TRUE, stringsAsFactors=FALSE, sep = ",");
+
+meth_cellines = colnames(meth)[-1]
+ds_cellines = colnames(ds)
+ge_cellines = colnames(ge)[-1]
+rnaseq_cellines = colnames(rnaseq)[-c(1:2)]
+rppa_cellines = colnames(rppa)[-c(1:2)]
+cnv_cellines = unique(cnv[,1])
+seq_cellines = unique(seq[,1])
+
+total_cellines = unique(prediction[,1])
+goal = setdiff(total_cellines, ds_cellines)

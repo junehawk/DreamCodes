@@ -1,0 +1,66 @@
+library(graphite)
+library(clipper)
+
+classes = c(rep(2,3), rep(1,8))
+len = length(kegg)
+a = list()
+drug_start = 10
+drug_end = 10
+a$alphaVar = 1
+a$alphaMean = 1
+filename = c("Aclacinomycin A_24_IC20_gene_based.txt", "Blebbistatin_24_IC20_gene_based.txt", "Camptothecin_24_IC20_gene_based.txt", "Cycloheximide_24_IC20_gene_based.txt", "Doxorubicin hydrochloride_24_IC20_gene_based.txt", "Etoposide_24_IC20_gene_based.txt", "Geldanamycin_24_IC20_gene_based.txt", "H-7, Dihydrochloride_24_IC20_gene_based.txt", "Methotrexate_24_IC20_gene_based.txt", "Mitomycin C_24_IC20_gene_based.txt", "Monastrol_24_IC20_gene_based.txt", "Rapamycin_24_IC20_gene_based.txt", "Trichostatin A_24_IC20_gene_based.txt", "Vincristine_24_IC20_gene_based.txt")
+for(i in drug_start:drug_end) {
+	cat("Analysis start for drug ", i, "\n")
+	alphaMeanResult = list()
+
+	alpha_addr = paste("/Users/Junehawk/Dream7/clipperOut/Drug",i,"_alpha.RData", sep="")
+
+	exp = read.table(paste("/Users/Junehawk/Downloads/gene_based/", filename[i], sep=""), skip=1, stringsAsFactors=F, row.names=1)
+	pathStart = 1
+	if(file.exists(alpha_addr)) {
+		load(alpha_addr)
+		pathStart = length(alphaMeanResult)+1
+	}
+	for(j in pathStart:len) {
+		graph = NULL
+		cat("pathway ", j, "\n")
+		clipped_addr = paste("/Users/Junehawk/Dream7/clipperOut/Drug",i,"_Pathway",j,"clipped.RData", sep="")
+		if(j==13 || j==59 || j==120 || j==209 || j==11 || j==98) {
+			alphaMeanResult[[length(alphaMeanResult)+1]] = a
+			save(alphaMeanResult, file = alpha_addr)
+			cat("just skipping\n")
+			next
+		}
+		try(graph <- convertIdentifiers(kegg[[j]], "symbol"), silent=T)
+		if(is.null(graph)) {
+			cat("graph loading error\n")
+			alphaMeanResult[[length(alphaMeanResult)+1]] = a
+			save(alphaMeanResult, file = alpha_addr)
+			next
+		}
+		else {
+			graph <- pathwayGraph(graph)
+			genes <- nodes(graph)
+			genes <- intersect(genes, row.names(exp))
+			graph <- subGraph(genes, graph)
+			exps <- as.matrix(exp[genes,,drop=FALSE])
+			pathwayAnalysis = NULL
+			
+			try(pathwayAnalysis <- pathQ(exps, classes, graph, nperm=100, alphaV=0.05, b=100), silent=T)
+			if(is.null(pathwayAnalysis)) {
+				cat("pathway analysis error\n")
+				alphaMeanResult[[length(alphaMeanResult)+1]] = a
+				save(alphaMeanResult, file = alpha_addr)
+				next
+			}
+			else {
+				alphaMeanResult[[length(alphaMeanResult)+1]] = pathwayAnalysis
+				cat("alpha calculation done, clipper start\n")
+				clipped <- clipper(exps, classes, graph, "var", trZero=0.01)
+				clipped <- prunePaths(clipped, thr=0.2)
+				save(clipped, file = clipped_addr)
+				save(alphaMeanResult, file = alpha_addr)
+			}
+		}
+	}
+}

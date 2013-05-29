@@ -1,0 +1,57 @@
+library(multicore)
+activity = read.table("/Users/junehawk/Desktop/pathologist/act_all.txt", header=TRUE, stringsAsFactors=FALSE, sep="\t");
+activity = activity[rowMeans(is.na(activity))==0,]
+ds = read.table("Dream7/DrugSensitivity1/DREAM7_DrugSensitivity1_Drug_Response_Training.txt", header=TRUE, row.names=1);
+act_cellines = colnames(activity)
+drug_cellines = colnames(ds)
+act = subset(activity, select=intersect(drug_cellines, act_cellines))
+dss = subset(ds, select=intersect(drug_cellines, act_cellines))
+binded = rbind(act, dss)
+mydata = as.data.frame(t(binded))
+
+FDR = dim(act)[1]
+num_path = dim(act)[1]
+num_drug = dim(dss)[1]
+#num_drug = 1
+drug_start = num_path
+
+lmpvalue <- function(x, i, data = mydata) {
+	cat("x[[1]]\t", x[[1]], "x\t", x, "\n")
+	fit = lm(mydata[,i+drug_start]~mydata[,x[[1]]])
+	if(dim(summary(fit)$coefficient)[1] >=2) {
+		if(!is.na(summary(fit)$coefficient[2,4]))
+			summary(fit)$coefficient[2,4]
+		else
+			1
+	}
+	else
+		1
+}
+
+PathwayName = activity[,1]
+
+rm(activity)
+rm(ds)
+rm(act)
+rm(dss)
+rm(binded)
+
+x = as.list(c(1:num_path))
+for (i in 1:num_drug) {
+	#cat("Drug ", i, "\n")
+	
+
+	pvalue = unlist(mclapply(x,lmpvalue,i=i))	
+	corrected = p.adjust(pvalue, method="fdr", n=num_path)
+	
+	result = cbind(activity,corrected)
+	candidate = subset(result, corrected<=0.1)
+	rm(result)
+	candidate$corrected = NULL
+	
+	rm(candidate)
+	rm(pvalue)
+	rm(corrected)
+	rm(toWrite)
+}
+rm(mydata)

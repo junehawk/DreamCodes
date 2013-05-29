@@ -1,0 +1,10 @@
+drug31 40%
+drug5 
+6.164
+6.164
+6.164
+6.164
+6.164
+svm_rank/svm_rank_learn -c 1 sample_test/training/Training_sub_drug14_mutation.txt sample_test/model/drug14.model
+svm_rank/svm_rank_classify sample_test/test/Test_sub_drug14_mutation.txt sample_test/model/drug14.model sample_test/prediction/drug14.prediction
+svm_rank/svm_rank_classify sample_test/training/Training_sub_drug5_mutation.txt sample_test/model/drug5.model sample_test/prediction/drug5_train.prediction 
